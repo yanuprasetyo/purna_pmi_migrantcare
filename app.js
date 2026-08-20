@@ -420,3 +420,112 @@ loadData().then(renderAll).catch(err => {
   document.querySelector('main').innerHTML = `<p style="padding:40px;color:#B7503F;">Gagal memuat data: ${err.message}. Pastikan file di folder <code>data/</code> sudah lengkap.</p>`;
   console.error(err);
 });
+
+// ---------- Unduh data ----------
+
+function filterSuffix() {
+  const parts = [];
+  if (state.kab !== 'Semua') parts.push(state.kab);
+  else if (state.province !== 'Semua') parts.push(state.province);
+  if (state.selectedProgram) parts.push(state.selectedProgram);
+  return parts.length ? '_' + parts.join('_').replace(/\s+/g, '-') : '';
+}
+
+function triggerDownload(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function toCSVValue(v) {
+  if (v === null || v === undefined) return '';
+  const s = String(v);
+  return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function rowsToCSV(headers, rows) {
+  const lines = [headers.map(toCSVValue).join(';')];
+  rows.forEach(r => lines.push(r.map(toCSVValue).join(';')));
+  return '\uFEFF' + lines.join('\r\n'); // BOM supaya Excel baca UTF-8 dengan benar
+}
+
+function tableExportData() {
+  const rows = [...filteredSummary()].sort((a, b) => b.akses_2024_ya - a.akses_2024_ya);
+  const headers = ['Program', 'Akses 2022', 'Akses 2024', 'Perubahan', 'Rata-rata nominal (Rp)', 'Lapor masalah'];
+  const body = rows.map(r => [
+    r.program_name,
+    r.akses_2022_ya,
+    r.akses_2024_ya,
+    r.akses_2024_ya - r.akses_2022_ya,
+    r.rata_nominal ?? '',
+    r.jumlah_masalah ?? 0,
+  ]);
+  return { headers, body, rows };
+}
+
+document.getElementById('btnChartPNG').addEventListener('click', () => {
+  if (!state.chart) return;
+  const a = document.createElement('a');
+  a.href = state.chart.toBase64Image('image/png', 1);
+  a.download = `grafik-cakupan${filterSuffix()}.png`;
+  a.click();
+});
+
+document.getElementById('btnChartCSV').addEventListener('click', () => {
+  const rows = [...filteredSummary()].sort((a, b) => b.akses_2024_ya - a.akses_2024_ya);
+  const csv = rowsToCSV(
+    ['Program', 'Akses 2022', 'Akses 2024'],
+    rows.map(r => [r.program_name, r.akses_2022_ya, r.akses_2024_ya])
+  );
+  triggerDownload(`grafik-cakupan${filterSuffix()}.csv`, new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+});
+
+document.getElementById('btnTableCSV').addEventListener('click', () => {
+  const { headers, body } = tableExportData();
+  const csv = rowsToCSV(headers, body);
+  triggerDownload(`rincian-program${filterSuffix()}.csv`, new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+});
+
+document.getElementById('btnTableXLSX').addEventListener('click', () => {
+  const { headers, body } = tableExportData();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...body]);
+  ws['!cols'] = [{ wch: 42 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 14 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Rincian Program');
+  XLSX.writeFile(wb, `rincian-program${filterSuffix()}.xlsx`);
+});
+
+document.getElementById('btnTablePDF').addEventListener('click', () => {
+  const { headers, body } = tableExportData();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape' });
+  const judul = state.kab !== 'Semua' ? state.kab : (state.province !== 'Semua' ? state.province : 'Nasional');
+  doc.setFontSize(14);
+  doc.text(`Rincian Program Perlindungan Sosial \u2014 ${judul}`, 14, 16);
+  doc.setFontSize(9);
+  doc.setTextColor(110, 102, 126);
+  doc.text('Survei Perlindungan Sosial PMI 2022\u20132024', 14, 22);
+  doc.autoTable({
+    head: [headers],
+    body: body.map(r => r.map(v => v === '' || v === null || v === undefined ? '\u2014' : (typeof v === 'number' ? new Intl.NumberFormat('id-ID').format(v) : v))),
+    startY: 28,
+    styles: { font: 'helvetica', fontSize: 9 },
+    headStyles: { fillColor: [124, 58, 237], textColor: 255 },
+    alternateRowStyles: { fillColor: [246, 244, 253] },
+  });
+  doc.save(`rincian-program${filterSuffix()}.pdf`);
+});
+
+document.getElementById('btnMapCSV').addEventListener('click', () => {
+  const rows = state.byKab.filter(r => !state.selectedProgram || r.program_code === state.selectedProgram);
+  const csv = rowsToCSV(
+    ['Kabupaten', 'Provinsi', 'Program', 'Akses 2022', 'Akses 2024', 'Total responden'],
+    rows.map(r => [r.kab, r.prov, state.summary.find(s => s.program_code === r.program_code)?.program_name || r.program_code, r.akses_2022_ya, r.akses_2024_ya, r.total_responden])
+  );
+  triggerDownload(`data-peta${filterSuffix()}.csv`, new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+});
