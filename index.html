@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -42,6 +44,15 @@
     <div class="chart-shell">
       <canvas id="mainChart" height="430"></canvas>
     </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Sebaran wilayah survei</h2>
+      <p class="panel-sub" id="mapSub">Ukuran lingkaran = jumlah responden, warna = rata-rata cakupan 2024. Klik titik untuk memfilter kabupaten.</p>
+    </div>
+    <div id="map" style="height:420px; border-radius:12px; overflow:hidden;"></div>
+    <div class="map-legend" id="mapLegend"></div>
   </section>
 
   <section class="panel">
@@ -87,7 +98,7 @@
   </section>
 
   <footer class="site-footer">
-    <p>Data: Survei Perlindungan Sosial PMI 2022&ndash;2024. "Rata-rata nominal" adalah penjumlahan seluruh komponen nominal yang tercatat per responden &mdash; gambaran umum, bukan angka tervalidasi presisi. </p>
+    <p>Data: Survei Perlindungan Sosial PMI 2022&ndash;2024. "Rata-rata nominal" adalah penjumlahan seluruh komponen nominal yang tercatat per responden &mdash; gambaran umum, bukan angka tervalidasi presisi.  <code>data/</code>.</p>
   </footer>
 
 </main>
