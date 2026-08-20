@@ -1,10 +1,12 @@
 const COLORS = {
-  primary: '#2B4C7E',
-  line: '#DED8C8',
-  positive: '#3F7D5C',
-  negative: '#B7503F',
-  ink: '#1C2B39',
-  inkSoft: '#52616F',
+  primary: '#7C3AED',
+  primarySoft: '#D8B4FE',
+  accent: '#FF4F8B',
+  line: '#ECE8F5',
+  positive: '#0FA968',
+  negative: '#F43F5E',
+  ink: '#1A1523',
+  inkSoft: '#6E667E',
 };
 
 const state = {
@@ -170,14 +172,14 @@ function renderChart() {
         {
           label: '2022',
           data: rows.map(r => r.akses_2022_ya),
-          backgroundColor: COLORS.line,
-          borderRadius: 3,
+          backgroundColor: COLORS.primarySoft,
+          borderRadius: 4,
         },
         {
           label: '2024',
           data: rows.map(r => r.akses_2024_ya),
           backgroundColor: COLORS.primary,
-          borderRadius: 3,
+          borderRadius: 4,
         },
       ],
     },
@@ -265,7 +267,7 @@ function renderDetail() {
     </div>
   `).join('') + `
     <div class="legend-row">
-      <span><span class="legend-dot" style="background:${COLORS.line}"></span>2022</span>
+      <span><span class="legend-dot" style="background:${COLORS.primarySoft}"></span>2022</span>
       <span><span class="legend-dot" style="background:${COLORS.primary}"></span>2024</span>
     </div>
   `;
