@@ -289,3 +289,40 @@ tbody td { padding: 12px 10px; border-bottom: 1px solid var(--line); }
 }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Map ---------- */
+#map { border: 1px solid var(--line); }
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.legend-scale {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-scale-bar {
+  width: 90px;
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #FBE4F1 0%, #7C3AED 100%);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.leaflet-popup-content { margin: 12px 14px; font-size: 0.85rem; }
+.map-popup-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+.map-popup-row { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-soft); }
+.map-popup-row strong { color: var(--ink); font-family: 'JetBrains Mono', monospace; }
