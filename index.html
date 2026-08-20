@@ -9,6 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -18,7 +21,7 @@
   <div class="wrap">
     <p class="eyebrow">Riset Perlindungan Sosial &middot; Pekerja Migran Indonesia</p>
     <h1>Cakupan Bantuan Sosial pada Rumah Tangga PMI</h1>
-    <p class="lede">Survei panel 1.596 rumah tangga eks-pekerja migran di 5 provinsi, tahun 2022 dan 2024. </p>
+    <p class="lede">Survei panel 1.596 rumah tangga eks-pekerja migran di 5 provinsi, panel data tahun 2022 dan 2024.</p>
   </div>
 </header>
 
@@ -37,9 +40,15 @@
   <section class="kpi-row" id="kpiRow" aria-label="Ringkasan angka utama"></section>
 
   <section class="panel">
-    <div class="panel-head">
-      <h2>Cakupan per program, 2022 &rarr; 2024</h2>
-      <p class="panel-sub">Jumlah rumah tangga yang mengakses tiap program pada tiap gelombang survei.</p>
+    <div class="panel-head panel-head-row">
+      <div>
+        <h2>Cakupan per program, 2022 &rarr; 2024</h2>
+        <p class="panel-sub">Jumlah rumah tangga yang mengakses tiap program pada tiap gelombang survei.</p>
+      </div>
+      <div class="download-row">
+        <button class="dl-btn" id="btnChartPNG">Unduh PNG</button>
+        <button class="dl-btn" id="btnChartCSV">Unduh CSV</button>
+      </div>
     </div>
     <div class="chart-shell">
       <canvas id="mainChart" height="430"></canvas>
@@ -47,18 +56,30 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head">
-      <h2>Sebaran wilayah survei</h2>
-      <p class="panel-sub" id="mapSub">Ukuran lingkaran = jumlah responden, warna = rata-rata cakupan 2024. Klik titik untuk memfilter kabupaten.</p>
+    <div class="panel-head panel-head-row">
+      <div>
+        <h2>Sebaran wilayah survei</h2>
+        <p class="panel-sub" id="mapSub">Ukuran lingkaran = jumlah responden, warna = rata-rata cakupan 2024. Klik titik untuk memfilter kabupaten.</p>
+      </div>
+      <div class="download-row">
+        <button class="dl-btn" id="btnMapCSV">Unduh CSV</button>
+      </div>
     </div>
     <div id="map" style="height:420px; border-radius:12px; overflow:hidden;"></div>
     <div class="map-legend" id="mapLegend"></div>
   </section>
 
   <section class="panel">
-    <div class="panel-head">
-      <h2>Rincian tiap program</h2>
-      <p class="panel-sub">Klik satu baris untuk melihat sebaran provinsi, nilai bantuan, dan laporan masalah.</p>
+    <div class="panel-head panel-head-row">
+      <div>
+        <h2>Rincian tiap program</h2>
+        <p class="panel-sub">Klik satu baris untuk melihat sebaran provinsi, nilai bantuan, dan laporan masalah.</p>
+      </div>
+      <div class="download-row">
+        <button class="dl-btn" id="btnTableCSV">Unduh CSV</button>
+        <button class="dl-btn" id="btnTableXLSX">Unduh Excel</button>
+        <button class="dl-btn" id="btnTablePDF">Unduh PDF</button>
+      </div>
     </div>
     <div class="table-shell">
       <table id="programTable">
