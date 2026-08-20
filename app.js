@@ -9,6 +9,16 @@ const COLORS = {
   inkSoft: '#6E667E',
 };
 
+const KAB_COORDS = {
+  'Indramayu':      [-6.3373, 108.3200],
+  'Kebumen':        [-7.6712, 109.6531],
+  'Wonosobo':       [-7.3695, 109.9009],
+  'Banyuwangi':     [-8.2192, 114.3691],
+  'Jember':         [-8.1844, 113.6681],
+  'Lombok Tengah':  [-8.7000, 116.2833],
+  'Lembata':        [-8.3667, 123.5333],
+};
+
 const state = {
   summary: [],
   byProvince: [],
@@ -19,6 +29,8 @@ const state = {
   kab: 'Semua',
   selectedProgram: null,
   chart: null,
+  map: null,
+  markerLayer: null,
 };
 
 const fmtNum = (n) => n === null || n === undefined ? '\u2014' : new Intl.NumberFormat('id-ID').format(Math.round(n));
@@ -228,6 +240,7 @@ function renderTable() {
       const code = tr.getAttribute('data-code');
       state.selectedProgram = state.selectedProgram === code ? null : code;
       renderTable();
+      renderMap();
       renderDetail();
     });
   });
@@ -293,11 +306,100 @@ function renderDetail() {
   }
 }
 
+function colorForRate(rate) {
+  // rate 0-100 -> gradasi dari pink lembut ke ungu vibrant
+  const t = Math.max(0, Math.min(1, rate / 100));
+  const c1 = [251, 228, 241]; // #FBE4F1
+  const c2 = [124, 58, 237];  // #7C3AED
+  const rgb = c1.map((v, i) => Math.round(v + (c2[i] - v) * t));
+  return `rgb(${rgb.join(',')})`;
+}
+
+function initMap() {
+  if (state.map) return;
+  state.map = L.map('map', { scrollWheelZoom: false, attributionControl: true })
+    .setView([-7.5, 112.5], 6);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 12,
+  }).addTo(state.map);
+  state.markerLayer = L.layerGroup().addTo(state.map);
+}
+
+function renderMap() {
+  initMap();
+  setTimeout(() => state.map.invalidateSize(), 0);
+  state.markerLayer.clearLayers();
+
+  const programFilter = state.selectedProgram;
+  const sub = document.getElementById('mapSub');
+  if (programFilter) {
+    const meta = state.summary.find(s => s.program_code === programFilter);
+    sub.innerHTML = `Menampilkan cakupan program <strong>${meta.program_name}</strong> per kabupaten (2024). Klik titik untuk memfilter, klik program lain di tabel untuk ganti tampilan.`;
+  } else {
+    sub.textContent = 'Ukuran lingkaran = jumlah responden, warna = rata-rata cakupan seluruh program (2024). Klik titik untuk memfilter kabupaten.';
+  }
+
+  Object.keys(KAB_COORDS).forEach(kabName => {
+    const rowsForKab = state.byKab.filter(r => r.kab === kabName && (!programFilter || r.program_code === programFilter));
+    if (rowsForKab.length === 0) return;
+    const totalResponden = rowsForKab[0].total_responden;
+    const prov = rowsForKab[0].prov;
+
+    let rate2024, sum22 = 0, sum24 = 0;
+    if (programFilter) {
+      sum22 = rowsForKab[0].akses_2022_ya;
+      sum24 = rowsForKab[0].akses_2024_ya;
+      rate2024 = (sum24 / totalResponden) * 100;
+    } else {
+      rowsForKab.forEach(r => { sum22 += r.akses_2022_ya; sum24 += r.akses_2024_ya; });
+      rate2024 = (sum24 / (totalResponden * rowsForKab.length)) * 100;
+    }
+
+    const radius = 10 + Math.sqrt(totalResponden) * 1.6;
+    const marker = L.circleMarker(KAB_COORDS[kabName], {
+      radius,
+      fillColor: colorForRate(rate2024),
+      color: '#7C3AED',
+      weight: 1.5,
+      opacity: 0.9,
+      fillOpacity: 0.85,
+    });
+
+    const label = programFilter
+      ? `<div class="map-popup-row"><span>Akses 2022</span><strong>${fmtNum(sum22)}</strong></div>
+         <div class="map-popup-row"><span>Akses 2024</span><strong>${fmtNum(sum24)}</strong></div>`
+      : `<div class="map-popup-row"><span>Rata-rata cakupan 2024</span><strong>${rate2024.toFixed(1)}%</strong></div>`;
+
+    marker.bindPopup(`
+      <div class="map-popup-title">${kabName}</div>
+      <div class="map-popup-row"><span>Provinsi</span><strong>${prov}</strong></div>
+      <div class="map-popup-row"><span>Responden</span><strong>${fmtNum(totalResponden)}</strong></div>
+      ${label}
+    `);
+
+    marker.on('click', () => {
+      state.province = prov;
+      state.kab = kabName;
+      renderAll();
+    });
+
+    marker.addTo(state.markerLayer);
+  });
+
+  const legend = document.getElementById('mapLegend');
+  legend.innerHTML = `
+    <div class="legend-scale"><span>Cakupan rendah</span><span class="legend-scale-bar"></span><span>tinggi</span></div>
+    <div class="legend-scale"><span>&#9679; Lingkaran besar = responden lebih banyak</span></div>
+  `;
+}
+
 function renderAll() {
   renderProvinceChips();
   renderKabChips();
   renderKPIs();
   renderChart();
+  renderMap();
   renderTable();
   renderDetail();
 }
@@ -305,6 +407,7 @@ function renderAll() {
 document.getElementById('detailClose').addEventListener('click', () => {
   state.selectedProgram = null;
   renderTable();
+  renderMap();
   renderDetail();
 });
 
