@@ -326,3 +326,20 @@ tbody td { padding: 12px 10px; border-bottom: 1px solid var(--line); }
 }
 .map-popup-row { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-soft); }
 .map-popup-row strong { color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+
+/* ---------- Map tooltip ---------- */
+.map-tooltip {
+  background: var(--paper);
+  border: 1.5px solid var(--primary);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8rem;
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.18);
+}
+.map-tooltip strong {
+  font-family: 'Sora', sans-serif;
+  color: var(--primary-dark);
+}
+.map-tooltip::before { display: none; }
