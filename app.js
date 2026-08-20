@@ -10,8 +10,11 @@ const COLORS = {
 const state = {
   summary: [],
   byProvince: [],
+  byKab: [],
+  provKabLookup: {},
   detail: [],
   province: 'Semua',
+  kab: 'Semua',
   selectedProgram: null,
   chart: null,
 };
@@ -20,13 +23,17 @@ const fmtNum = (n) => n === null || n === undefined ? '\u2014' : new Intl.Number
 const fmtRp = (n) => n === null || n === undefined ? '\u2014' : 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
 
 async function loadData() {
-  const [summary, byProvince, detail] = await Promise.all([
+  const [summary, byProvince, byKab, provKabLookup, detail] = await Promise.all([
     fetch('data/program_summary.json').then(r => r.json()),
     fetch('data/program_by_province.json').then(r => r.json()),
+    fetch('data/program_by_kab.json').then(r => r.json()),
+    fetch('data/prov_kab_lookup.json').then(r => r.json()),
     fetch('data/program_detail.json').then(r => r.json()),
   ]);
   state.summary = summary;
   state.byProvince = byProvince;
+  state.byKab = byKab;
+  state.provKabLookup = provKabLookup;
   state.detail = detail;
 }
 
@@ -35,8 +42,32 @@ function provinceList() {
   return ['Semua', ...Array.from(set).sort()];
 }
 
-// recompute summary rows filtered by province (derive from byProvince + detail)
+function kabList() {
+  if (state.province === 'Semua') {
+    const all = new Set(state.byKab.map(r => r.kab));
+    return ['Semua', ...Array.from(all).sort()];
+  }
+  return ['Semua', ...(state.provKabLookup[state.province] || [])];
+}
+
+// recompute summary rows filtered by province/kabupaten
 function filteredSummary() {
+  if (state.kab !== 'Semua') {
+    const rows = state.byKab.filter(r => r.kab === state.kab);
+    return rows.map(r => {
+      const base = state.summary.find(s => s.program_code === r.program_code) || {};
+      return {
+        program_code: r.program_code,
+        program_name: base.program_name || r.program_code,
+        akses_2022_ya: r.akses_2022_ya,
+        akses_2024_ya: r.akses_2024_ya,
+        total_responden: r.total_responden,
+        rata_nominal: base.rata_nominal,
+        jumlah_masalah: base.jumlah_masalah,
+        jumlah_mengadu: base.jumlah_mengadu,
+      };
+    });
+  }
   if (state.province === 'Semua') return state.summary;
   const rows = state.byProvince.filter(r => r.prov === state.province);
   return rows.map(r => {
@@ -63,6 +94,27 @@ function renderProvinceChips() {
     chip.textContent = p;
     chip.addEventListener('click', () => {
       state.province = p;
+      state.kab = 'Semua';
+      renderAll();
+    });
+    el.appendChild(chip);
+  });
+}
+
+function renderKabChips() {
+  const el = document.getElementById('kabFilter');
+  el.innerHTML = '';
+  kabList().forEach(k => {
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (k === state.kab ? ' active' : '');
+    chip.textContent = k;
+    chip.addEventListener('click', () => {
+      state.kab = k;
+      // kalau pilih provinsi "Semua" tapi kabupaten spesifik, samakan provinsinya otomatis
+      if (k !== 'Semua' && state.province === 'Semua') {
+        const found = state.byKab.find(r => r.kab === k);
+        if (found) state.province = found.prov;
+      }
       renderAll();
     });
     el.appendChild(chip);
@@ -71,9 +123,14 @@ function renderProvinceChips() {
 
 function renderKPIs() {
   const rows = filteredSummary();
-  const totalResponden = state.province === 'Semua'
-    ? 1596
-    : (state.byProvince.find(r => r.prov === state.province)?.total_responden ?? rows[0]?.total_responden ?? 0);
+  let totalResponden;
+  if (state.kab !== 'Semua') {
+    totalResponden = state.byKab.find(r => r.kab === state.kab)?.total_responden ?? rows[0]?.total_responden ?? 0;
+  } else if (state.province !== 'Semua') {
+    totalResponden = state.byProvince.find(r => r.prov === state.province)?.total_responden ?? rows[0]?.total_responden ?? 0;
+  } else {
+    totalResponden = 1596;
+  }
 
   let biggestUp = null, biggestDown = null;
   rows.forEach(r => {
@@ -236,6 +293,7 @@ function renderDetail() {
 
 function renderAll() {
   renderProvinceChips();
+  renderKabChips();
   renderKPIs();
   renderChart();
   renderTable();
