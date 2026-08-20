@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Perlindungan Sosial PMI 2022–2024</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <p class="eyebrow">Riset Perlindungan Sosial &middot; Pekerja Migran Indonesia</p>
+    <h1>Cakupan Bantuan Sosial pada Rumah Tangga PMI</h1>
+    <p class="lede">Survei panel 1.596 rumah tangga eks-pekerja migran di 5 provinsi, dua gelombang &mdash; 2022 dan 2024. Bandingkan cakupan, nilai bantuan, dan masalah yang dilaporkan pada 13 program perlindungan sosial.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="controls" aria-label="Filter provinsi">
+    <span class="controls-label">Provinsi</span>
+    <div id="provFilter" class="chip-row"></div>
+  </section>
+
+  <section class="kpi-row" id="kpiRow" aria-label="Ringkasan angka utama"></section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Cakupan per program, 2022 &rarr; 2024</h2>
+      <p class="panel-sub">Jumlah rumah tangga yang mengakses tiap program pada tiap gelombang survei.</p>
+    </div>
+    <div class="chart-shell">
+      <canvas id="mainChart" height="430"></canvas>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Rincian tiap program</h2>
+      <p class="panel-sub">Klik satu baris untuk melihat sebaran provinsi, nilai bantuan, dan laporan masalah.</p>
+    </div>
+    <div class="table-shell">
+      <table id="programTable">
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th class="num">2022</th>
+            <th class="num">2024</th>
+            <th class="num">Tren</th>
+            <th class="num">Rata&#8209;rata nominal</th>
+            <th class="num">Lapor masalah</th>
+          </tr>
+        </thead>
+        <tbody id="programTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="detail-panel" id="detailPanel" hidden>
+    <div class="detail-head">
+      <div>
+        <p class="eyebrow" id="detailEyebrow">Detail program</p>
+        <h2 id="detailTitle">&nbsp;</h2>
+      </div>
+      <button id="detailClose" class="close-btn" aria-label="Tutup detail">&times;</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-col">
+        <h3>Sebaran per provinsi</h3>
+        <div id="detailProvince" class="mini-bars"></div>
+      </div>
+      <div class="detail-col">
+        <h3>Ragam masalah yang dilaporkan</h3>
+        <ul id="detailProblems" class="problem-list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>Data: Survei Perlindungan Sosial PMI 2022&ndash;2024. "Rata-rata nominal" adalah penjumlahan seluruh komponen nominal yang tercatat per responden &mdash; gambaran umum, bukan angka tervalidasi presisi. Dibangun sebagai situs statis, data diperbarui dengan mengganti file di folder <code>data/</code>.</p>
+  </footer>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
