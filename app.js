@@ -371,6 +371,11 @@ function renderMap() {
          <div class="map-popup-row"><span>Akses 2024</span><strong>${fmtNum(sum24)}</strong></div>`
       : `<div class="map-popup-row"><span>Rata-rata cakupan 2024</span><strong>${rate2024.toFixed(1)}%</strong></div>`;
 
+    marker.bindTooltip(
+      `<strong>${kabName}</strong><br>${programFilter ? fmtNum(sum24) + ' akses 2024' : rate2024.toFixed(1) + '% rata-rata cakupan'} &middot; ${fmtNum(totalResponden)} responden`,
+      { direction: 'top', offset: [0, -radius], sticky: false, className: 'map-tooltip' }
+    );
+
     marker.bindPopup(`
       <div class="map-popup-title">${kabName}</div>
       <div class="map-popup-row"><span>Provinsi</span><strong>${prov}</strong></div>
